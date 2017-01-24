@@ -1,4 +1,4 @@
-﻿@model Form_Post_MVC.Models.UserModel
+﻿@model Form_Post_MVC.Models.DirectoryModel
 
 @{
     Layout = null;
@@ -43,11 +43,14 @@
     </style>
 </head>
 <body>
+
+
+    @*Test bingding*@
     @using (Html.BeginForm("Index", "Home", FormMethod.Post))
     {
-        <table cellpadding="0" cellspacing="0">
+        <table style="display:none" cellpadding="0" cellspacing="0">
             <tr>
-                <th colspan="2" align="center">Person Details</th>
+                <th colspan="2" align="center">For bind test:Person Details</th>
             </tr>
             <tr>
                 <td>PersonId: </td>
@@ -81,5 +84,101 @@
             </tr>
         </table>
     }
+
+
+    @*Add Group *@
+    @using (Html.BeginForm("addGroup", "Home", FormMethod.Post))
+    {
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th colspan="2" align="center">Add Group:</th>
+            </tr>
+       
+
+            <tr>
+                <td>Group Name(CN): </td>
+                <td>
+                    @Html.TextBoxFor(m => m.CN)
+                </td>
+            </tr>
+
+            <tr>
+                <td>samAccountName: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.SamAccountName)
+                </td>
+            </tr>
+
+          
+           
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Submit" /></td>
+            </tr>
+        </table>
+    }
+
+    @*Add OU *@
+    @using (Html.BeginForm("addOU", "Home", FormMethod.Post))
+    {
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th colspan="2" align="center">Add OU:</th>
+            </tr>
+
+
+            <tr>
+                <td>OU: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.OU)
+                </td>
+            </tr>
+
+            <tr>
+                <td>OU Description: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.OUDescription)
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Submit" /></td>
+            </tr>
+        </table>
+    }
+
+    @*Create User *@
+    @using (Html.BeginForm("createUser", "Home", FormMethod.Post))
+    {
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th colspan="2" align="center">Create User:</th>
+            </tr>
+
+
+            <tr>
+                <td>UserName: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.UserName)
+                </td>
+            </tr>
+
+ 
+            <tr>
+                <td>samAccountName: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.SamAccountName)
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Submit" /></td>
+            </tr>
+        </table>
+    }
+
+
 </body>
 </html>
