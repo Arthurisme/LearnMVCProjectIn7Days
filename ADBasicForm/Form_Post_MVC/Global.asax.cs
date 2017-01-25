@@ -5,7 +5,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace Form_Post_MVC
+namespace ADBasic
+
 {
     public class MvcApplication : System.Web.HttpApplication
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Form_Post_MVC.Models
+namespace ADBasic.Models
 {
     public class DirectoryModel
     {
@@ -11,6 +11,12 @@ namespace Form_Post_MVC.Models
         /// Gets or sets PersonId.
         /// </summary>
         public int UserId { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets OperatorPerson.
+        /// </summary>
+        public string OperatorPerson { get; set; }
 
         /// <summary>
         /// Gets or sets Name.

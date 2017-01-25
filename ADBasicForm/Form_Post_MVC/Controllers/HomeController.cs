@@ -1,4 +1,4 @@
-﻿using Form_Post_MVC.Models;
+﻿using ADBasic.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +6,10 @@ using System.Web;
 using System.Web.Mvc;
 using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
+using Microsoft.VisualBasic.FileIO;
 
 
-namespace Form_Post_MVC.Controllers
+namespace ADBasic.Controllers
 {
     public class HomeController : Controller
     {
@@ -27,6 +28,7 @@ namespace Form_Post_MVC.Controllers
         {
             int userId = directory.UserId;
             string name = directory.Name;
+            string operatorPerson = directory.OperatorPerson;
             string CN = directory.CN;
             string samAccountName = directory.SamAccountName;
             string gender = directory.Gender;
@@ -37,7 +39,8 @@ namespace Form_Post_MVC.Controllers
             {
 
                 // Bind to the domain that this user is currently connected to.
-                DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                //DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                DirectoryEntry dom = new DirectoryEntry("LDAP://192.168.86.130", "Administrator", "Testtest01");
 
                 // Find the container (in this case, the Consulting organizational unit) that you 
                 // wish to add the new group to.
@@ -65,7 +68,7 @@ namespace Form_Post_MVC.Controllers
             ////////////////////////////////////////////////////////////////////////////
 
 
-            TempData["username"] = name;
+            TempData["operatorPerson"] = operatorPerson;
             
             TempData["feedbackString"] = "Active Directory is commited successfully. <br>" +  
                   "You added "+ CN + " as Group in the " + StrCurrentTestOU + ".";
@@ -78,6 +81,7 @@ namespace Form_Post_MVC.Controllers
         {
             int userId = directory.UserId;
             string name = directory.Name;
+            string operatorPerson = directory.OperatorPerson;
             string CN = directory.CN;
             string samAccountName = directory.SamAccountName;
             string gender = directory.Gender;
@@ -88,13 +92,14 @@ namespace Form_Post_MVC.Controllers
 
 
 
-            try { 
-            // Bind to the domain that this user is currently connected to.
-            DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+            try {
+                // Bind to the domain that this user is currently connected to.
+                //DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                DirectoryEntry dom = new DirectoryEntry("LDAP://192.168.86.130", "Administrator", "Testtest01");
 
-            // Find the container (in this case, the Consulting organizational unit) that you 
-            // wish to add the new group to.
-            DirectoryEntry ou = dom.Children.Find("OU="+ StrCurrentTestOU);
+                // Find the container (in this case, the Consulting organizational unit) that you 
+                // wish to add the new group to.
+                DirectoryEntry ou = dom.Children.Find("OU="+ StrCurrentTestOU);
 
 
             dom.RefreshCache();
@@ -121,7 +126,7 @@ namespace Form_Post_MVC.Controllers
             ////////////////////////////////////////////////////////////////////////////
 
 
-            TempData["username"] = name;
+            TempData["operatorPerson"] = operatorPerson;
 
             TempData["feedbackString"] = "Active Directory is commited successfully. <br> "   
                 + "You added " + strOUForAdd + " as OU in the " + StrCurrentTestOU + ".";
@@ -133,6 +138,7 @@ namespace Form_Post_MVC.Controllers
         public ActionResult createUser(DirectoryModel directory)
         {
             int userId = directory.UserId;
+            string operatorPerson = directory.OperatorPerson;
             string name = directory.Name;
             string CN = directory.CN;
             string samAccountName = directory.SamAccountName;
@@ -149,7 +155,8 @@ namespace Form_Post_MVC.Controllers
             try
             {
                 // Bind to the domain that this user is currently connected to.
-                DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                //DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                DirectoryEntry dom = new DirectoryEntry("LDAP://192.168.86.130", "Administrator", "Testtest01");
 
                 // Find the container (in this case, the Consulting organizational unit) that you 
                 // wish to add the new group to.
@@ -165,6 +172,9 @@ namespace Form_Post_MVC.Controllers
                 usr.Properties["samAccountName"].Value = samAccountName;
                 usr.CommitChanges();
 
+                TempData["feedbackString"] = "Active Directory is commited successfully. <br> "
+               + "You added " + strUserForAdd + " as User in the " + StrCurrentTestOU + ".";
+
             }
 
             catch (System.Runtime.InteropServices.COMException COMEx)
@@ -172,26 +182,89 @@ namespace Form_Post_MVC.Controllers
                 // If a COMException is thrown, then the following code example can catch the text of the error.
                 // For more information about handling COM exceptions, see Handling Errors.
                 Console.WriteLine(COMEx.ErrorCode);
+                TempData["feedbackString"] = "There are some Error on the server or code, please contact admin.";
             }
 
             ////////////////////////////////////////////////////////////////////////////
 
 
-            TempData["username"] = name;
+            TempData["operatorPerson"] = operatorPerson;
 
-            TempData["feedbackString"] = "Active Directory is commited successfully. <br> "
-                + "You added " + strUserForAdd + " as User in the " + StrCurrentTestOU+".";
+           
 
             return RedirectToAction("FeedbackMethod", "Home");
         }
 
         [HttpPost]
-        public ActionResult Index(DirectoryModel user)
+        public ActionResult CreatBulkADUsersFromCSVFile(DirectoryModel directory)
         {
-            int userId = user.UserId;
-            string name = user.Name;
-            string gender = user.Gender;
-            string city = user.City;
+
+            string operatorPerson = directory.OperatorPerson;
+
+
+
+
+            string csv_File_Path = @"C:\NewUsers.csv";
+            TextFieldParser csvReader = new TextFieldParser(csv_File_Path);
+            csvReader.SetDelimiters(new string[] { "," });
+            csvReader.HasFieldsEnclosedInQuotes = true;
+
+            // reading column fields 
+            string[] colFields = csvReader.ReadFields();
+            int index_Name = colFields.ToList().IndexOf("Name");
+            int index_samaccountName = colFields.ToList().IndexOf("samAccountName");
+            int index_ParentOU = colFields.ToList().IndexOf("ParentOU");
+            while (!csvReader.EndOfData)
+            {
+
+             
+
+                // reading user fields 
+                string[] csvData = csvReader.ReadFields();
+                //DirectoryEntry ouEntry = new DirectoryEntry("LDAP://" + csvData[index_ParentOU]);
+
+                // Bind to the domain that this user is currently connected to.
+                //DirectoryEntry dom = new DirectoryEntry("LDAP://adtest", "Administrator", "Testtest01");
+                DirectoryEntry dom = new DirectoryEntry("LDAP://192.168.86.130", "Administrator", "Testtest01");
+
+                DirectoryEntry ou = dom.Children.Find("OU=" + StrCurrentTestOU);
+
+
+                try
+                {
+
+                    // Use the Add method to add a user to an organizational unit.
+                    DirectoryEntry usr = ou.Children.Add("CN=" + csvData[index_Name], "user");
+                    // Set the samAccountName, then commit changes to the directory.
+                    usr.Properties["samAccountName"].Value = csvData[index_samaccountName];
+                    usr.CommitChanges();
+
+                    TempData["feedbackString"] = "Active Directory is commited successfully. <br> "
++ "You added bulk users in the " + StrCurrentTestOU + ".";
+
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    TempData["feedbackString"] = "There are some Error on the server or code, please contact admin.";
+                }
+            }
+            csvReader.Close();
+
+            TempData["operatorPerson"] = operatorPerson;
+
+            return RedirectToAction("FeedbackMethod", "Home");
+        }
+
+        [HttpPost]
+        public ActionResult Index(DirectoryModel directory)
+        {
+            int userId = directory.UserId;
+            string name = directory.Name;
+            string operatorPerson = directory.OperatorPerson;
+            string gender = directory.Gender;
+            string city = directory.City;
 
 
 
@@ -258,7 +331,7 @@ namespace Form_Post_MVC.Controllers
             //}
 
 
-            TempData["username"] = name;
+            TempData["operatorPerson"] = operatorPerson;
 
             TempData["feedbackString"] = "Active Directory is commited successfully.";
 
@@ -267,11 +340,11 @@ namespace Form_Post_MVC.Controllers
 
         public string FeedbackMethod()
         {
-            string username = TempData["username"] as String;
+            string operatorPerson = TempData["operatorPerson"] as String;
             string feedbackString = TempData["feedbackString"] as String;
 
 
-            return username + ": You have clicked submit. <br>" +  
+            return operatorPerson + ": You have clicked submit. <br>" +  
                   feedbackString;
         }
 
